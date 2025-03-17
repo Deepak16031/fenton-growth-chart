@@ -11,12 +11,18 @@ import {
   FormControlLabel, 
   Radio,
   Divider,
-  useTheme
+  useTheme,
+  Box,
+  Switch,
+  FormGroup,
+  Tooltip
 } from '@mui/material';
 import { BabyData } from '../types';
+import { useDatabase } from '../context/DatabaseContext';
 
 interface BabyDataFormProps {
   onSubmit: (data: BabyData) => void;
+  initialData?: BabyData | null;
 }
 
 const defaultData: BabyData = {
@@ -31,10 +37,19 @@ const defaultData: BabyData = {
   currentHeadCircumference: 33
 };
 
-const BabyDataForm: React.FC<BabyDataFormProps> = ({ onSubmit }) => {
+const BabyDataForm: React.FC<BabyDataFormProps> = ({ onSubmit, initialData }) => {
   const theme = useTheme();
-  const [formData, setFormData] = useState<BabyData>(defaultData);
+  const { currentProfile, saveBabyData } = useDatabase();
+  const [formData, setFormData] = useState<BabyData>(initialData || defaultData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saveToProfile, setSaveToProfile] = useState(!!currentProfile);
+
+  // Update form data if initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,7 +83,7 @@ const BabyDataForm: React.FC<BabyDataFormProps> = ({ onSubmit }) => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form data
@@ -99,8 +114,28 @@ const BabyDataForm: React.FC<BabyDataFormProps> = ({ onSubmit }) => {
       return;
     }
     
+    // Prepare data with profile info if needed
+    let dataToSubmit: BabyData = { ...formData };
+    
+    // Save to database if profile is selected and save is enabled
+    if (currentProfile && saveToProfile) {
+      try {
+        dataToSubmit = {
+          ...formData,
+          profileId: currentProfile.id,
+          measurementDate: new Date().toISOString()
+        };
+        
+        // Save to database
+        const savedId = await saveBabyData(dataToSubmit);
+        dataToSubmit.id = savedId;
+      } catch (error) {
+        console.error('Failed to save data to profile:', error);
+      }
+    }
+    
     // Submit the form data
-    onSubmit(formData);
+    onSubmit(dataToSubmit);
   };
 
   return (
@@ -118,6 +153,30 @@ const BabyDataForm: React.FC<BabyDataFormProps> = ({ onSubmit }) => {
       </Typography>
       
       <Divider sx={{ marginY: 2 }} />
+      
+      {/* Profile save toggle */}
+      {currentProfile && (
+        <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={saveToProfile}
+                  onChange={(e) => setSaveToProfile(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label={
+                <Tooltip title="Save this data to the current profile's history">
+                  <Typography variant="body2">
+                    Save to {currentProfile.name}'s profile
+                  </Typography>
+                </Tooltip>
+              }
+            />
+          </FormGroup>
+        </Box>
+      )}
       
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3}>

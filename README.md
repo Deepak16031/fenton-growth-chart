@@ -1,6 +1,6 @@
 # Fenton Preterm Growth Chart Application
 
-A web application for visualizing and monitoring the growth of premature infants using the Fenton 2013 Preterm Growth Charts.
+A web application for visualizing and monitoring the growth of premature infants using the Fenton 2013 Preterm Growth Charts with local SQLite storage.
 
 ## Overview
 
@@ -11,6 +11,7 @@ This application helps parents of premature babies track and understand their ch
 - Growth assessment based on gestational age
 - Comparison with term babies at 40 weeks
 - Calm, parent-friendly user interface
+- Local data storage using SQLite (no cloud required)
 
 ## Features
 
@@ -19,12 +20,18 @@ This application helps parents of premature babies track and understand their ch
 - **Corrected Age Calculation**: Automatically calculates your baby's corrected age
 - **Growth Projection**: Shows expected growth based on birth percentiles
 - **Term Comparison**: Compares with full-term babies at the same percentile
+- **Profile Management**: Create multiple baby profiles to track more than one child
+- **Historical Data**: Save and view growth measurements over time
+- **Database Export**: Export your data in JSON format for backup
+- **Offline Storage**: All data is stored locally in your browser
 
 ## Built With
 
 - React (TypeScript)
 - Material UI for component styling
 - Chart.js for growth charts visualization
+- SQL.js for in-browser SQLite database
+- LocalForage for persistent storage
 
 ## Getting Started
 
